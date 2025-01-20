@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="action_instance_prestashop_product_listing" model="ir.actions.act_window">
+            <field name="name">Prestashop Listing</field>
+            <field name="res_model">prestashop.product.listing</field>
+            <field name="domain">[('prestashop_instance_id', '=', active_id)]</field>
+            <field name='view_mode'>tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Prestashop Product listing will display here.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_prestashop_order_id" model="ir.actions.act_window">
+            <field name="name">Prestashop Order</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_id" ref="sale.view_quotation_tree_with_onboarding"/>
+            <field name="domain">[('instance_id', '=', active_id)]</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Prestashop Order will display here
+                </p>
+            </field>
+        </record>
+
+        <record id="action_prestashop_customer_id" model="ir.actions.act_window">
+            <field name="name">Prestashop Customer</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_id" ref="base.view_partner_tree"/>
+            <field name="domain">[('instance_id', '=', active_id)]</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Prestashop Customer will display here
+                </p>
+            </field>
+        </record>
+
+        <!--form view-->
+        <record id="prestashop_instance_integration_form" model="ir.ui.view">
+            <field name="name">prestashop instance integration form</field>
+            <field name="model">prestashop.instance.integration</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_test_connection" string="Test Connection" class="oe_highlight"
+                                type="object"/>
+                    </header>
+                    <sheet>
+                        <field name="active" invisible="1"/>
+                        <widget name="web_ribbon" text="Archived" bg_color="bg-danger"
+                                invisible="active == True"/>
+                        <div name="button_box" position="inside">
+                            <button class="oe_stat_button" type="action"
+                                    name="%(odoo_prestashop_integration.action_prestashop_cron_id)d"
+                                    string="Cron"
+                                    icon="fa-clock-o"/>
+                            <button class="oe_stat_button" type="action"
+                                    name="%(odoo_prestashop_integration.action_prestashop_log_instance_id)d"
+                                    string="Logs"
+                                    icon="fa-bitbucket-square"/>
+                            <button class="oe_stat_button" type="action"
+                                    name="%(odoo_prestashop_integration.action_instance_prestashop_product_listing)d"
+                                    string="Products"
+                                    icon="fa-shopping-bag"/>
+                            <button class="oe_stat_button" type="action"
+                                    name="%(odoo_prestashop_integration.action_prestashop_customer_id)d"
+                                    string="Customers"
+                                    icon="fa-users"/>
+                            <button class="oe_stat_button" type="action"
+                                    name="%(odoo_prestashop_integration.action_prestashop_order_id)d" string="Orders"
+                                    icon="fa-list-ul"/>
+                        </div>
+                        <field name="image" widget="image" class="oe_avatar"/>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="e.g. Prestashop Instance name..." required="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="company_id" required="1"/>
+                                <field name="warehouse_id" required="1"/>
+                                <field name="prestashop_store_time_zone" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook name="Notebook">
+                            <page name="credential" string="Credential">
+                                <group>
+                                    <field name="prestashop_url" string="Prestashop URL/Host" required="1"/>
+                                    <field name="prestashop_api_key" required="1"/>
+                                </group>
+                            </page>
+
+                            <!--<Order Level Configuration>-->
+                            <page name="apply_tax_in_sale_order" string="Order">
+                                <div class="o_setting_right_pane">
+                                    <label for="apply_tax_in_order"/>
+                                    <div class="text-muted">
+                                        Default Tax Handling in Odoo - Taxes will be configured according to Odoo's
+                                        standard functional behavior, utilizing the default settings for Tax and Fiscal
+                                        Position as per Odoo configurations.
+
+                                        Generate a New Tax in Case of Absence - In the event that the tax information
+                                        from Prestashop is not identified in Odoo, the system will initiate the creation of
+                                        a new tax entry to accommodate the missing data.
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="oe_inline">
+                                            <field name="apply_tax_in_order" string="Apply Tax In Order" required="0"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br/>
+                                <div class="o_setting_right_pane">
+                                    <label for="price_list_id"/>
+                                    <div class="text-muted">
+                                        1.During product sync operation, prices will be Imported/Exported using this
+                                        Pricelist.
+                                        2.During order sync operation, this pricelist will be set in the order if the
+                                        order currency from store and the currency from the pricelist set here, matches.
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="oe_inline">
+                                            <field name="price_list_id" required="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br/>
+                                <h3>Update Order Status</h3>
+                                <br/>
+                                <div class="col-12 col-lg-6 o_setting_box">
+                                    <div class="o_setting_left_pane">
+                                        <field name="auto_fulfilled_gif_card_order"/>
+                                    </div>
+                                    <div class="o_setting_right_pane">
+                                        <label string="Auto Fulfilled Gift Card Order"
+                                               for="auto_fulfilled_gif_card_order"/>
+                                        <div class="text-muted">
+                                            Automatically fulfill only the gift cards of the order.
+                                            Prestashop -> Settings -> Checkout -> Order processing
+                                            If you have Checked Automatically fulfill only the gift cards of the order
+                                            then Only Checked here.
+                                        </div>
+                                    </div>
+                                </div>
+                                <br/>
+
+                                <div class="col-12 col-lg-6 o_setting_box">
+                                    <div class="o_setting_left_pane">
+                                        <field name="notify_customer"/>
+                                    </div>
+                                    <div class="o_setting_right_pane">
+                                        <label string="Notify TO Customer" for="notify_customer"/>
+                                        <div class="text-muted">
+                                            Notify Customer Once Update Order Status.
+                                        </div>
+                                    </div>
+                                </div>
+                            </page>
+
+                            <page name="product_information" string="Product">
+                                <div class="col-12 col-lg-6 o_setting_box">
+                                    <div class="o_setting_left_pane">
+                                        <field name="create_product_if_not_found"/>
+                                    </div>
+                                    <div class="o_setting_right_pane">
+                                        <label string="Create Product in Odoo if not matched."
+                                               for="create_product_if_not_found"/>
+                                        <div class="text-muted">
+                                            This setting triggers the creation of a new product in your catalog when the
+                                            system cannot locate the item based on its SKU.
+
+                                            However, caution is advised if you operate across multiple sales channels
+                                            with
+                                            distinct SKU on each channel.
+                                            Enabling this option under such circumstances may result in the
+                                            unintentional
+                                            generation of duplicate products within your database.
+
+                                            Therefore, we recommend selectively enabling this option based on your
+                                            specific
+                                            product catalog configuration to avoid potential issues with duplicate
+                                            entries.
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-12 col-lg-6 o_setting_box">
+                                    <div class="o_setting_left_pane">
+                                        <field name="is_sync_images"/>
+                                    </div>
+                                    <div class="o_setting_right_pane">
+                                        <label string="Sync Image" for="is_sync_images"/>
+                                        <div class="text-muted">
+                                            When selected, this option automates the assignment of a product image
+                                            during the product import process.
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </page>
+                            <page name="synced_information" string="Last Synced Detail">
+                                <group string="Last Synced Detailed">
+                                    <group>
+                                        <field name="last_order_synced_date" readonly="1"/>
+                                        <field name="last_product_synced_date" readonly="1"/>
+                                        <field name="last_synced_customer_date" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- tree view-->
+        <record id="prestashop_instance_integration_tree" model="ir.ui.view">
+            <field name="name">Prestashop instance integration tree</field>
+            <field name="model">prestashop.instance.integration</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" string="Instance Name"/>
+                    <field name="prestashop_url" string="Prestashop URL/Host"/>
+                    <field name="company_id"/>
+                    <field name="warehouse_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--kanban view-->
+        <record id="prestashop_instance_integration_kanban" model="ir.ui.view">
+            <field name="name">prestashop.instance.integration.kanban</field>
+            <field name="model">prestashop.instance.integration</field>
+            <field name="arch" type="html">
+                <kanban class="oe_background_grey o_kanban_dashboard o_account_kanban" create="false">
+                    <field name="name"/>
+                    <field name="prestashop_url"/>
+                    <field name="prestashop_api_key"/>
+                    <field name="image"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_global_click" style="border-radius: 10px;">
+                                <div t-attf-class="o_kanban_card_header">
+                                    <div class="o_kanban_card_header_title">
+                                        <div class="o_primary">
+                                            <!-- <img class="oe_kanban_avatar img-fluid"
+                                                  t-att-src="kanban_image('prestashop.instance.integration', 'avatar_128', record.id.raw_value)"/>-->
+
+                                            <span>&#160;&#160;</span>
+                                            <a type="object" name="action_prestashop_open_instance_view_form">
+                                                <field name="name"/>
+                                            </a>
+                                        </div>
+                                        <!--                                        <br/>-->
+                                    </div>
+                                </div>
+                                <div class="container o_kanban_card_content fa-2x">
+                                    <div class="row mt10">
+                                        <div class="col-4 border-right">
+                                            <a name="%(odoo_prestashop_integration.action_prestashop_customer_id)d"
+                                               type="action"
+                                               class="d-flex flex-column align-items-center">
+                                                <span class="fa-stack fa-lg" title="Customer">
+                                                    <i class="fa fa-square-o fa-stack-2x"/>
+                                                    <i class="fa fa-users fa-stack-1x"/>
+                                                </span>
+                                                <span class="text-muted">Customer</span>
+                                            </a>
+                                        </div>
+                                        <div class="col-4 border-right">
+                                            <a name="%(odoo_prestashop_integration.action_instance_prestashop_product_listing)d"
+                                               type="action"
+                                               class="d-flex flex-column align-items-center">
+                                                <span class="fa-stack fa-lg" title="Product">
+                                                    <i class="fa fa-square-o fa-stack-2x"/>
+                                                    <i class="fa fa-product-hunt fa-stack-1x"/>
+                                                </span>
+                                                <span class="text-muted">Product</span>
+                                            </a>
+                                        </div>
+                                        <div class="col-4 border-right">
+                                            <a name="%(odoo_prestashop_integration.action_prestashop_order_id)d"
+                                               type="action"
+                                               class="d-flex flex-column align-items-center">
+                                                <span class="fa-stack fa-lg" title="Orders">
+                                                    <i class="fa fa-square-o fa-stack-2x"/>
+                                                    <i class="fa fa-line-chart fa-stack-1x"/>
+                                                </span>
+                                                <span class="text-muted">Order</span>
+                                            </a>
+                                        </div>
+                                    </div>
+<!--                                    <br/>-->
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <button name="%(odoo_prestashop_integration.actions_prestashop_operations)d"
+                                                    type="action" string="Operations" class="btn-primary"
+                                                    t-attf-style="border-radius: 12px;">
+                                                <span>
+                                                    <i class="fa fa-hand-o-right fa-1x" aria-hidden="true"/>
+                                                    Operations
+                                                </span>
+                                            </button>
+                                        </div>
+
+                                        <div class="col-6" align="right">
+                                            <button name="%(odoo_prestashop_integration.action_prestashop_log_instance_id)d"
+                                                    type="action" string="Logs" class="btn-primary"
+                                                    t-attf-style="border-radius: 12px;">
+                                                <span>
+                                                    <i class="fa fa-book fa-1x" aria-hidden="true"/>
+                                                    Logs
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                    <field name="id" invisible="True"/>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="action_prestashop_instance_integration" model="ir.actions.act_window">
+            <field name="name">Prestashop Instance</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">prestashop.instance.integration</field>
+            <field name='view_mode'>kanban,tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a Prestashop Instance
+                </p>
+            </field>
+        </record>
+
+        <record id="action_prestashop_instance_integrations_tree_view" model="ir.actions.act_window">
+            <field name="name">Prestashop Instance</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">prestashop.instance.integration</field>
+            <field name='view_mode'>tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a Prestashop Instance
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

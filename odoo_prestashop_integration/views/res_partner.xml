@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="prestashop_res_partner_view_form_inherited" model="ir.ui.view">
+            <field name="name">Prestashop Partner View Form Inherited</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='internal_notes']" position="after">
+                    <page name="prestashop_customer_details" string="Prestashop Customer Details">
+                        <group>
+                            <group>
+                                <field name="prestashop_customer_id"/>
+                                <field name="prestashop_instance_id"/>
+                                <field name="prestashop_address_id"/>
+                                <field name="prestashop_customer_birthdate"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+        <!-- Action -->
+        <record id="prestashop_res_partner_action" model="ir.actions.act_window">
+            <field name="name">Prestashop Res Partner</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+            <field name="domain">[('instance_id', '!=', False)]</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Prestashop Customer will display here.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

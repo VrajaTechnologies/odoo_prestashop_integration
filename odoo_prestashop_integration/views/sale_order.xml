@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="prestashop_sale_order_form_view" model="ir.ui.view">
+            <field name="name">prestashop.sale.order.form.view</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="Prestashop Order Detail">
+                        <group>
+                            <group>
+                                <field name="instance_id" readonly="1"/>
+                                <field name="is_already_sync" readonly="1"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="prestashop_sale_order_action" model="ir.actions.act_window">
+            <field name="name">Prestashop Sale Order</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="domain">[('instance_id', '!=', False)]</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Prestashop Sale Order will display here.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

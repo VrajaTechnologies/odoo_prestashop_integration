@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <menuitem id="prestashop_instance_integration"
+                  name="Prestashop"
+                  action="action_prestashop_instance_integration"
+                  web_icon="odoo_prestashop_integration,static/description/prestashop.png"/>
+
+        <menuitem id="dashboard_menu"
+                  name="Dashboard"
+                  parent="odoo_prestashop_integration.prestashop_instance_integration"
+                  action="action_prestashop_instance_integration"
+                  sequence="-1"/>
+
+
+        <!-- Configuration Menu & it's Items -->
+        <menuitem id="prestashop_configuration_menu"
+                  name="Configuration"
+                  parent="odoo_prestashop_integration.prestashop_instance_integration"
+                  sequence="10"/>
+        <menuitem id="prestashop_configuration_sub_menu"
+                  name="Instance"
+                  action="action_prestashop_instance_integrations_tree_view"
+                  parent="odoo_prestashop_integration.prestashop_configuration_menu"/>
+
+        <!-- Products Menu & it's Items -->
+        <menuitem id="product_listing_menu"
+                  name="Products"
+                  parent="odoo_prestashop_integration.prestashop_instance_integration"
+                  sequence="1"/>
+        <menuitem id="product_listing_submenu"
+                  name="Product Listing"
+                  parent="odoo_prestashop_integration.product_listing_menu"
+                  sequence="0"
+                  action="action_prestashop_product_listing"/>
+        <menuitem id="prestashop_product_listing_items_menu"
+                  name="Product Listing Items"
+                  parent="odoo_prestashop_integration.product_listing_menu"
+                  action="prestashop_product_listing_item_action"/>
+
+        <!-- Sale Order Menu & it's Items -->
+        <menuitem id="sale_order_menu"
+                  name="Sales"
+                  parent="odoo_prestashop_integration.prestashop_instance_integration"
+                  sequence="0"/>
+        <menuitem id="order_listing_submenu"
+                  name="Order"
+                  parent="sale_order_menu"
+                  sequence="0"
+                  action="prestashop_sale_order_action"/>
+        <menuitem id="customer_listing_submenu"
+                  name="Customers"
+                  parent="sale_order_menu"
+                  sequence="1"
+                  action="prestashop_res_partner_action"/>
+
+        <!-- Process Menu & it's Items -->
+        <menuitem id="process_menu"
+                  name="Process"
+                  parent="odoo_prestashop_integration.prestashop_instance_integration"
+                  sequence="2"/>
+        <menuitem id="menu_order_queue"
+                  name="Order"
+                  parent="odoo_prestashop_integration.process_menu"
+                  sequence="0"
+                  action="action_prestashop_order_queue_process"/>
+        <menuitem id="menu_product_queue"
+                  name="Product Queue"
+                  parent="odoo_prestashop_integration.process_menu"
+                  sequence="2"
+                  action="action_prestashop_product_process"/>
+        <menuitem id="menu_customer_queue"
+                  name="Customer Queue"
+                  parent="odoo_prestashop_integration.process_menu"
+                  sequence="3"
+                  action="action_prestashop_customer_queue"/>
+        <menuitem id="menu_inventory_queue"
+                  name="Export Inventory Queue"
+                  parent="odoo_prestashop_integration.process_menu"
+                  sequence="4"
+                  action="action_prestashop_inventory_process"/>
+
+        <!-- Log Menu & it's Items -->
+        <menuitem id="log_menu"
+                  name="Log"
+                  parent="odoo_prestashop_integration.prestashop_instance_integration"
+                  sequence="3"/>
+        <menuitem id="menu_prestashop_log"
+                  name="Log Book"
+                  parent="odoo_prestashop_integration.log_menu"
+                  sequence="0"
+                  action="action_prestashop_log"/>
+        <menuitem id="menu_prestashop_log_line"
+                  name="Log Book Line"
+                  parent="odoo_prestashop_integration.log_menu"
+                  sequence="1"
+                  action="action_prestashop_log_line"/>
+
+    </data>
+</odoo>

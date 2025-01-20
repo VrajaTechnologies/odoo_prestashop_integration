@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- Prestashop Operations Form-->
+        <record id="prestashop_operations_form_view" model="ir.ui.view">
+            <field name="name">prestashop operations form view</field>
+            <field name="model">prestashop.operations</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <p style="background-color:powderblue; padding: 10px;"
+                           invisible="import_operations != 'import_order'">
+                            <b>Notes: Import Order Process</b>
+                            <ul>
+                                <br/>
+                                <li>To import Shipped Orders From Prestashop Store based on Order IDs, From and To Date, It
+                                    will Create Order Queue Inside odoo.
+                                </li>
+                                <li>
+                                    Queue Automatically Processed Using Cron Job. User Can also Process Manually By
+                                    Click On Process Manually Button Inside the Order Queue.
+                                </li>
+                                <li>
+                                    If any Issue in Process of Order Queue We manage the Logs. Log is Link with Order
+                                    Queue So We Easily Check.
+                                </li>
+                            </ul>
+                        </p>
+                        <p style="background-color:powderblue; padding: 10px;"
+                           invisible="import_operations != 'import_product'">
+                            <b>Notes: Import Product Process</b>
+                            <ul>
+                                <br/>
+                                <li>
+                                    To Import Products From Prestashop, It will Create
+                                    Product Queue Inside odoo(Prestashop->Process->Product Queue)
+                                </li>
+                                <li>Queue Automatically Processed in Background Using Cron Job. User Can also Process
+                                    Manually By Click On Process Manually Button Inside the Product Queue.
+                                </li>
+                                <li>
+                                    If any Issue in Process of Product Queue We manage the Logs. Log is Link with
+                                    Product Queue So We Easily Check.
+                                </li>
+                            </ul>
+                            <p>
+                                <b>Notes: Import Product By - Remote IDs</b>
+                                <ul>
+                                    <br/>
+                                    <li>
+                                        To Import Products Based on Specify Prestashop Template IDs
+                                        Example of Enter prestashop product template ids:
+                                        310,311,312,313
+                                    </li>
+                                    <li>
+                                        Once User Enter the Prestashop Template IDs It will Create the Product Queue and
+                                        process
+                                        It.
+                                    </li>
+                                    <li>
+                                        Please Enter prestashop product template ids with comma separated values without
+                                        any
+                                        quotes.
+                                    </li>
+                                </ul>
+                            </p>
+                        </p>
+                        <p style="background-color:powderblue; padding: 10px;"
+                           invisible="import_operations != 'import_customers'">
+                            <b>Notes: Import Customer</b>
+                            <ul>
+                                <br/>
+                                <li>
+                                    To Import Customers From Prestashop Store, It will Create Customer Queue Inside
+                                    odoo(Prestashop->Process->Customer Queue)
+                                </li>
+                                <li>
+                                    Queue Automatically Processed in Background Using Cron Job.
+                                </li>
+                            </ul>
+                        </p>
+                        <br/>
+                        <group>
+                            <group>
+                                <field name="instance_id"/>
+                                <field name="prestashop_operation" widget="radio"/>
+                                <field name="import_operations" widget="radio"/>
+                            </group>
+                            <group>
+                                <!-- Import Order fields -->
+                                <field name="from_date_order"
+                                       required="import_operations in ['import_order', 'import_shipped_order']"
+                                       invisible="prestashop_operation != 'import' or import_operations not in ['import_order', 'import_shipped_order']"/>
+                                <field name="to_date_order"
+                                       required="import_operations in ['import_order', 'import_shipped_order']"
+                                       invisible="prestashop_operation != 'import' or import_operations not in ['import_order', 'import_shipped_order']"/>
+                                <field name="prestashop_order_id"
+                                       invisible="prestashop_operation != 'import' or import_operations not in ['import_order', 'import_shipped_order']"/>
+
+                                <!-- Import Product fields -->
+                                <field name="prestashop_product_id"
+                                       invisible="prestashop_operation != 'import' or import_operations != 'import_product'"/>
+                                />
+                            </group>
+                        </group>
+                        <footer>
+                            <button string="Execute" class="oe_highlight" type="object"
+                                    name="execute_process_of_prestashop"/>
+                            <button string="Cancel" class="oe_highlight" special="cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="actions_prestashop_operations" model="ir.actions.act_window">
+            <field name="name">Prestashop Operations</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">prestashop.operations</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="prestashop_operations_form_view"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>
+
+

@@ -1,0 +1,16 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_prestashop_instance_integration,prestashop_instance_integration,model_prestashop_instance_integration,,1,1,1,1
+access_prestashop_product_listing,prestashop_product_listing,model_prestashop_product_listing,,1,1,1,1
+access_prestashop_product_listing_item,prestashop_product_listing_item,model_prestashop_product_listing_item,,1,1,1,1
+access_prestashop_order_queue,prestashop_order_queue,model_order_data_queue,,1,1,1,1
+access_prestashop_order_queue_line,prestashop_order_queue_line,model_order_data_queue_line,,1,1,1,1
+access_prestashop_variant_queue_line,prestashop_variant_queue_line,model_product_data_queue,,1,1,1,1
+access_prestashop_operations,prestashop_operations,model_prestashop_operations,,1,1,1,1
+access_prestashop_log,prestashop_log,model_prestashop_log,,1,1,1,1
+access_prestashop_log_line,prestashop_log_line,model_prestashop_log_line,,1,1,1,1
+access_customer_data_queue,customer_data_queue,model_customer_data_queue,,1,1,1,1
+access_customer_data_queue_line,customer_data_queue_line,model_customer_data_queue_line,,1,1,1,1
+access_product_data_queue,product_data_queue,model_product_data_queue,,1,1,1,1
+access_product_data_queue_line,product_data_queue_line,model_product_data_queue_line,,1,1,1,1
+access_inventory_data_queue,inventory_data_queue,model_inventory_data_queue,,1,1,1,1
+access_inventory_data_queue_line,inventory_data_queue_line,model_inventory_data_queue_line,,1,1,1,1

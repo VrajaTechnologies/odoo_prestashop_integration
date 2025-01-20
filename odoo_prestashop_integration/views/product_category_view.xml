@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="prestashop_product_categoryform_view" model="ir.ui.view">
+            <field name="name">Prestashop Product Category</field>
+            <field name="model">product.category</field>
+            <field name="inherit_id" ref="product.product_category_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet" position="inside">
+                    <notebook>
+                        <page name="prestashop_info" string="Prestashop Info">
+                            <group>
+                                <field name="prestashop_category_id" readonly="1"/>
+                                <field name="prestashop_parent_category_id" readonly="1"/>
+                                <field name="prestashop_category_url"/>
+                                <field name="instance_id" readonly="1"/>
+                                <field name="is_already_sync" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

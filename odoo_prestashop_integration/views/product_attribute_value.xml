@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="prestashop_product_attribute_value_view_list" model="ir.ui.view">
+            <field name="name">Prestashop Product Attribute Values</field>
+            <field name="model">product.attribute.value</field>
+            <field name="inherit_id" ref="product.product_attribute_value_list"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="prestashop_option_value_id" readonly="1"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>
