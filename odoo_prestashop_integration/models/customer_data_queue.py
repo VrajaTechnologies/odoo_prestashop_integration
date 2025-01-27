@@ -2,6 +2,7 @@ import logging
 import pprint
 from odoo import models, api, fields, tools
 from datetime import timedelta
+from urllib.parse import quote
 
 _logger = logging.getLogger("Customer Queue Line")
 
@@ -65,18 +66,16 @@ class CustomerDataQueue(models.Model):
             res_id_list.append(queue_id.id)
         return res_id_list
 
-    def fetch_countries_from_prestashop_to_odoo(self, instance, country_id):
+    def fetch_countries_from_prestashop_to_odoo(self, instance, country_id, log_id):
         """
         This method used to fetch a prestashop Countries
         """
-        log_id = self.env['prestashop.log'].generate_prestashop_logs('customer', 'import', instance, 'Process Started')
-        self._cr.commit()
         prestashop_country_list = []
         try:
             if country_id:
-                api_operation = "http://%s@%s/api/countries/?output_format=JSON&resource=countries&filter[id]=[%s]&display=full" % (
-                    instance and instance.prestashop_api_key,
-                    instance and instance.prestashop_url, country_id)
+                api_operation = "http://%s@%s/api/countries/?output_format=JSON&filter[id]=[%s]&display=full" % (
+                    instance.prestashop_api_key,
+                    instance.prestashop_url, country_id)
                 country_details_response_status, country_details_response_data = instance.send_get_request_from_odoo_to_prestashop(
                     api_operation)
                 if country_details_response_status:
@@ -92,18 +91,17 @@ class CustomerDataQueue(models.Model):
             _logger.info("Getting Some Error In Fetch The countries :: {0}".format(error))
         return prestashop_country_list
 
-    def fetch_state_from_prestashop_to_odoo(self, instance, state_id):
+    def fetch_state_from_prestashop_to_odoo(self, instance, state_id, log_id):
         """
         This method used to fetch a prestashop states
         """
-        log_id = self.env['prestashop.log'].generate_prestashop_logs('customer', 'import', instance, 'Process Started')
-        self._cr.commit()
+
         prestashop_states_list = []
         try:
             if state_id:
-                api_operation = "http://%s@%s/api/states/?output_format=JSON&resource=states&filter[id]=[%s]&display=full" % (
-                    instance and instance.prestashop_api_key,
-                    instance and instance.prestashop_url, state_id)
+                api_operation = "http://%s@%s/api/states/?output_format=JSON&filter[id]=[%s]&display=full" % (
+                    instance.prestashop_api_key,
+                    instance.prestashop_url, state_id)
                 states_details_response_status, states_details_response_data = instance.send_get_request_from_odoo_to_prestashop(
                     api_operation)
                 if states_details_response_status:
@@ -119,54 +117,74 @@ class CustomerDataQueue(models.Model):
             _logger.info("Getting Some Error In Fetch The countries :: {0}".format(error))
         return prestashop_states_list
 
-    def fetch_customers_from_prestashop_to_odoo(self, instance):
+    def fetch_customers_from_prestashop_to_odoo(self, instance, prestashop_sale_order_customer_id, log_id):
         """
         This method used to fetch a prestashop customer
         """
-        log_id = self.env['prestashop.log'].generate_prestashop_logs('customer', 'import', instance, 'Process Started')
-        self._cr.commit()
-        prestashop_customer_list = []
         try:
-            api_operation = "http://%s@%s/api/customers/?output_format=JSON" % (
-                instance and instance.prestashop_api_key,
-                instance and instance.prestashop_url)
-            customer_response_status, customer_response_data = instance.send_get_request_from_odoo_to_prestashop(api_operation)
-            if customer_response_status:
-                _logger.info("prestashop Get Customer Response : {0}".format(customer_response_data))
-                customers = customer_response_data.get('customers')
-                for customer in customers:
-                    customer_id = customer.get('id')
-                    if customer_id:
-                        api_operation = "http://%s@%s/api/customers/?output_format=JSON&resource=customers&filter[id]=[%s]&display=full" % (
-                            instance and instance.prestashop_api_key,
-                            instance and instance.prestashop_url, customer_id)
+            if prestashop_sale_order_customer_id:
+            # API operation to fetch a specific customer by ID
+                api_operation = (
+                        "http://%s@%s/api/customers/?output_format=JSON&filter[id]=[%s]&display=full"
+                        % (instance.prestashop_api_key, instance.prestashop_url, prestashop_sale_order_customer_id)
+                )
+                customer_response_status, customer_response_data = instance.send_get_request_from_odoo_to_prestashop(api_operation)
+
+                if customer_response_status:
+                    _logger.info("Prestashop Get Specific Customer Response : {0}".format(customer_response_data))
+                    customers = customer_response_data.get('customers', [])
+                    if customers:
+                        return customers[0]  # Return a single customer record for the given ID
+                    else:
+                        log_msg = f"No customer found with ID {prestashop_sale_order_customer_id}."
+                        self.env['prestashop.log.line'].generate_prestashop_process_line(
+                            'customer', 'import', instance, log_msg, False, log_msg, log_id, True
+                        )
+                else:
+                    log_msg = f"Failed to fetch specific customer details. Response: {customer_response_data}."
+                    self.env['prestashop.log.line'].generate_prestashop_process_line(
+                        'customer', 'import', instance, log_msg, False, log_msg, log_id, True
+                    )
+            else:
+
+                api_operation = "http://%s@%s/api/customers/?output_format=JSON" % (
+                   instance.prestashop_api_key,
+                    instance.prestashop_url)
+                customer_response_status, customer_response_data = instance.send_get_request_from_odoo_to_prestashop(api_operation)
+
+                if customer_response_status:
+                    _logger.info("prestashop Get Customer Response : {0}".format(customer_response_data))
+                    customers = customer_response_data.get('customers')
+                    first_id = customers[0].get('id')
+                    last_id = customers[-1].get('id')
+                    if customers:
+                        api_operation = "http://%s@%s/api/customers/?output_format=JSON&filter[id]=[%s,%s]&display=full" % (instance.prestashop_api_key,
+                            instance.prestashop_url, first_id,last_id)
                         customer_details_response_status, customer_details_response_data = instance.send_get_request_from_odoo_to_prestashop(
                             api_operation)
                         if customer_details_response_status:
                             customer_dicts = customer_details_response_data.get('customers')
-                            prestashop_customer_list.extend(customer_dicts)
+                            return customer_dicts
                         else:
                             log_msg = f"Something went wrong, not getting successful response from Prestashop\n{customer_response_data or customer_details_response_data}."
-                            self.env['prestashop.log.line'].generate_prestashop_process_line('customer', 'import',
-                                                                                             instance, log_msg, False,
-                                                                                             log_msg, log_id, True)
-            _logger.info(prestashop_customer_list)
+                            self.env['prestashop.log.line'].generate_prestashop_process_line('customer',
+                                                                                             'import', instance,
+                                                                                             log_msg,
+                                                                                             False, log_msg, log_id,
+                                                                                             True)
         except Exception as error:
             _logger.info("Getting Some Error In Fetch The customer :: {0}".format(error))
-        return prestashop_customer_list
 
-    def fetch_customers_addresses_from_prestashop_to_odoo(self, instance, customer_id):
+    def fetch_customers_addresses_from_prestashop_to_odoo(self, instance, customer_id, log_id):
         """
         This method used to fetch a prestashop customer address
         """
-        log_id = self.env['prestashop.log'].generate_prestashop_logs('customer', 'import', instance, 'Process Started')
-        self._cr.commit()
         prestashop_customer_address_list = []
         try:
             if customer_id:
-                api_operation = "http://%s@%s/api/addresses/?output_format=JSON&resource=addresses&filter[id_customer]=[%s]&display=full" % (
-                    instance and instance.prestashop_api_key,
-                    instance and instance.prestashop_url, customer_id.prestashop_customer_id)
+                api_operation = "http://%s@%s/api/addresses/?output_format=JSON&filter[id_customer]=[%s]&display=full" % (
+                    instance.prestashop_api_key,
+                    instance.prestashop_url, customer_id.prestashop_customer_id)
                 customer_address_details_response_status, customer_address_details_response_data = instance.send_get_request_from_odoo_to_prestashop(
                     api_operation)
                 if customer_address_details_response_status:
@@ -181,12 +199,12 @@ class CustomerDataQueue(models.Model):
             _logger.info("Getting Some Error In Fetch The customer :: {0}".format(error))
         return prestashop_customer_address_list
 
-    def import_customers_from_prestashop_to_odoo(self, instance):
+    def import_customers_from_prestashop_to_odoo(self, instance, customer=False, log_id=False):
         """
         This method use for import customer prestashop to odoo
         """
         to_date = fields.Datetime.now()
-        prestashop_customer_list = self.fetch_customers_from_prestashop_to_odoo(instance)
+        prestashop_customer_list = self.fetch_customers_from_prestashop_to_odoo(instance,customer, log_id)
         if prestashop_customer_list:
             res_id_list = self.create_prestashop_customer_queue_job(instance, prestashop_customer_list)
             instance.last_synced_customer_date = to_date
@@ -215,27 +233,6 @@ class CustomerDataQueue(models.Model):
                 if not customer_id:
                     customer_line.number_of_fails += 1
                     continue
-
-                # Fetch all addresses for the customer from PrestaShop
-                prestashop_customer_address_list = self.fetch_customers_addresses_from_prestashop_to_odoo(
-                    instance_id, customer_id)
-
-                for idx, address in enumerate(prestashop_customer_address_list):
-                    # Fetch country and state for each address dynamically
-                    country_id = int(address.get('id_country'))
-                    prestashop_country = self.fetch_countries_from_prestashop_to_odoo(instance_id, country_id)
-
-                    state_id = int(address.get('id_state'))
-                    prestashop_state = self.fetch_state_from_prestashop_to_odoo(instance_id, state_id)
-
-
-                    # First address is set as the main address
-                    if idx == 0:
-                        self.env['res.partner'].update_customer_addresses(customer_id, address, prestashop_country, prestashop_state)
-                    else:
-                        # Subsequent addresses are added as child records
-                        self.env['res.partner'].create_child_customer(
-                            instance_id, customer_id, address, prestashop_country, prestashop_state)
 
                 customer_line.state = 'completed'
 

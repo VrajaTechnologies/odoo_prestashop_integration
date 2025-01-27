@@ -95,6 +95,52 @@
                                 </group>
                             </page>
 
+                            <!-- Default Products configuration -->
+                            <page name="default_prestashop_product" string="Default Prestashop Product Detail">
+                                <div class="o_setting_right_pane">
+                                    <label for="prestashop_discount_product_id"/>
+                                    <div class="text-muted">
+                                        This is used for set discount product in a sale order lines.
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="oe_inline">
+                                            <field name="prestashop_discount_product_id"
+                                                   string="Discount Product"
+                                                   domain="[('detailed_type', '=', 'service')]"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br/>
+                                <div class="o_setting_right_pane">
+                                    <label for="prestashop_gift_product_id"/>
+                                    <div class="text-muted">
+                                        This is utilized for the administration of gift cards within sales
+                                        orders.
+                                    </div>
+                                    <div class="content-group oe_inline">
+                                        <div>
+                                            <field name="prestashop_gift_product_id" string="Gift Product"
+                                                   domain="[('detailed_type', '=', 'service')]"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br/>
+                                <div class="o_setting_right_pane">
+                                    <label for="prestashop_shipping_product_id"/>
+                                    <div class="text-muted">
+                                        This product will be recognized as a shipping item when adding a line to the
+                                        sales order.
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="oe_inline">
+                                            <field name="prestashop_shipping_product_id"
+                                                   string="Shipping Product"
+                                                   domain="[('detailed_type', '=', 'service')]"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </page>
+
                             <!--<Order Level Configuration>-->
                             <page name="apply_tax_in_sale_order" string="Order">
                                 <div class="o_setting_right_pane">
@@ -111,6 +157,18 @@
                                     <div class="content-group">
                                         <div class="oe_inline">
                                             <field name="apply_tax_in_order" string="Apply Tax In Order" required="0"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br/>
+                                <div class="o_setting_right_pane">
+                                    <label for="order_status_ids"/>
+                                    <div class="text-muted">
+                                        Select Default order status from here.
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="oe_inline">
+                                            <field name="order_status_ids" string="Order Status" widget="many2many_tags" required="1"/>
                                         </div>
                                     </div>
                                 </div>

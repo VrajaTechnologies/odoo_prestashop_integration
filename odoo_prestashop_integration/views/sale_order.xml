@@ -11,9 +11,68 @@
                         <group>
                             <group>
                                 <field name="instance_id" readonly="1"/>
-                                <field name="is_already_sync" readonly="1"/>
+                                <field name="prestashop_order_reference" readonly="1"/>
+<!--                                <field name="sale_auto_workflow_id" readonly="1"/>-->
+                                <field name="prestashop_carrier_ref" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="prestashop_order_id" readonly="1"/>
+                                <field name="prestashop_order_status" readonly="1"/>
+                                <field name="prestashop_payment_ref" readonly="1"/>
+<!--                                <field name="financial_status" readonly="1"/>-->
+<!--                                <field name="fulfillment_status" readonly="1"/>-->
+<!--                                <field name="is_order_risky"/>-->
+                                <field name="is_prestashop_multi_payment" invisible="1"/>
                             </group>
                         </group>
+<!--                        <div string="Risk Order">-->
+<!--                            <field name="risk_ids" readonly="1" nolabel="1">-->
+<!--                                <tree>-->
+<!--                                    <field name="name"/>-->
+<!--                                    <field name="cause_cancel"/>-->
+<!--                                    <field name="display"/>-->
+<!--                                    <field name="recommendation"/>-->
+<!--                                    <field name="score"/>-->
+<!--                                    <field name="source"/>-->
+<!--                                </tree>-->
+<!--                                <form>-->
+<!--                                    <group>-->
+<!--                                        <group>-->
+<!--                                            <field name="name"/>-->
+<!--                                            <field name="order_risk_id"/>-->
+<!--                                            <field name="recommendation"/>-->
+<!--                                        </group>-->
+<!--                                        <group>-->
+<!--                                            <field name="cause_cancel"/>-->
+<!--                                            <field name="display"/>-->
+<!--                                            <field name="score"/>-->
+<!--                                        </group>-->
+<!--                                    </group>-->
+<!--                                    <group string="Message">-->
+<!--                                        <field name="message" nolabel="1"/>-->
+<!--                                    </group>-->
+<!--                                </form>-->
+<!--                            </field>-->
+<!--                        </div>-->
+<!--                        <div string="Multi Payments" name="multi_payments"-->
+<!--                             invisible="is_prestashop_multi_payment == False">-->
+<!--                            <field name="prestashop_payment_transactions_ids" readonly="1" nolabel="1">-->
+<!--                                <tree>-->
+<!--                                    <field name="payment_gateway_id"/>-->
+<!--                                    <field name="auto_workflow_id"/>-->
+<!--                                    <field name="amount"/>-->
+<!--                                </tree>-->
+<!--                                <form>-->
+<!--                                    <group>-->
+<!--                                        <group>-->
+<!--                                            <field name="payment_gateway_id"/>-->
+<!--                                            <field name="auto_workflow_id"/>-->
+<!--                                            <field name="amount"/>-->
+<!--                                        </group>-->
+<!--                                    </group>-->
+<!--                                </form>-->
+<!--                            </field>-->
+<!--                        </div>-->
                     </page>
                 </xpath>
             </field>

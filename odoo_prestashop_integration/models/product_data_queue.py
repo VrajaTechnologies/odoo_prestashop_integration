@@ -132,9 +132,7 @@ class PrestashopProductDataQueue(models.Model):
                     _logger.info("Getting Some Error In Fetch The product :: \n {}".format(product_response_data))
         else:
             try:
-                api_operation = "http://%s@%s/api/products/?output_format=JSON" % (
-                    instance and instance.prestashop_api_key,
-                    instance and instance.prestashop_url)
+                api_operation = "http://%s@%s/api/products/?output_format=JSON" % (instance.prestashop_api_key,instance.prestashop_url)
                 response_status, response_data = instance.send_get_request_from_odoo_to_prestashop(api_operation)
                 if response_status:
                     _logger.info("Prestashop Product Response : {0}".format(response_data))

@@ -3,6 +3,7 @@ access_prestashop_instance_integration,prestashop_instance_integration,model_pre
 access_prestashop_product_listing,prestashop_product_listing,model_prestashop_product_listing,,1,1,1,1
 access_prestashop_product_listing_item,prestashop_product_listing_item,model_prestashop_product_listing_item,,1,1,1,1
 access_prestashop_order_queue,prestashop_order_queue,model_order_data_queue,,1,1,1,1
+access_order_status_data,order_status_data,model_prestashop_order_status,,1,1,1,1
 access_prestashop_order_queue_line,prestashop_order_queue_line,model_order_data_queue_line,,1,1,1,1
 access_prestashop_operations,prestashop_operations,model_prestashop_operations,,1,1,1,1
 access_prestashop_log,prestashop_log,model_prestashop_log,,1,1,1,1

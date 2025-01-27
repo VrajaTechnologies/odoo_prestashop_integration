@@ -49,14 +49,17 @@ class ResPartner(models.Model):
             'state_id': state_id.id if state_id else False,
             'parent_id': customer_id.id,
             'prestashop_instance_id': instance_id.id,
+            'prestashop_customer_id': address.get('id_customer') or '',
             'prestashop_address_id': address.get('id'),
             'type': 'other'
 
         }
-        existing_address = self.env['res.partner'].search([('prestashop_address_id', '=', address.get('id',''))], limit=1)
+        existing_address = self.env['res.partner'].search(['|',('prestashop_address_id', '=', address.get('id','')),('street','=',address.get('address1', '')),('city','=',address.get('city', '')),('zip','=',address.get('postcode', ''))], limit=1)
 
         if existing_address:
-            # Update the existing address
+            address_vals.update({
+                'prestashop_address_id': address.get('id')
+            })
             existing_address.write(address_vals)
         else:
             # Create a new child address
@@ -64,7 +67,7 @@ class ResPartner(models.Model):
 
         return customer_id
 
-    def create_update_customer_prestashop_to_odoo(self, instance_id, customer_line=False,
+    def create_update_customer_prestashop_to_odoo(self, instance_id, customer_line=False, so_customer_data=False,
                                                log_id=False):
         """
         This method used for create and update customer from prestashop to odoo
@@ -76,7 +79,8 @@ class ResPartner(models.Model):
         @Return : Updated or Created Customer ID / Customer Object
         """
         partner_obj = self.env["res.partner"]
-        customer_data = customer_line and eval(customer_line.customer_data_to_process)
+        customer_datas = customer_line and eval(customer_line.customer_data_to_process)
+        customer_data = so_customer_data or customer_datas
         prestashop_customer_id = customer_data.get('id')
         full_name = "{0} {1}".format(customer_data.get('firstname', '') or '',
                                      customer_data.get('lastname', '') or '')
@@ -93,7 +97,8 @@ class ResPartner(models.Model):
                          'prestashop_customer_birthdate': birthdate if birthdate else False,
                          'prestashop_instance_id': instance_id.id}
         existing_customer = self.env['res.partner'].search(['|', ('prestashop_customer_id', '=', prestashop_customer_id),('email','=',customer_data.get('email'))],
-                                                           limit=1)
+                                                              limit=1)
+        customer_id = ''
         if existing_customer:
             existing_customer.write(customer_vals)
             customer_id = existing_customer
@@ -107,6 +112,26 @@ class ResPartner(models.Model):
             msg = "Customer {0} Created Successfully".format(full_name)
         self.env['prestashop.log.line'].generate_prestashop_process_line('customer', 'import', instance_id, msg, False,
                                                                    customer_data, log_id, False)
+
+        prestashop_customer_address_list = self.env['customer.data.queue'].fetch_customers_addresses_from_prestashop_to_odoo(
+            instance_id, customer_id, log_id)
+
+        for idx, address in enumerate(prestashop_customer_address_list):
+            # Fetch country and state for each address dynamically
+            country_id = int(address.get('id_country'))
+            prestashop_country = self.env['customer.data.queue'].fetch_countries_from_prestashop_to_odoo(instance_id, country_id, log_id)
+
+            state_id = int(address.get('id_state'))
+            prestashop_state = self.env['customer.data.queue'].fetch_state_from_prestashop_to_odoo(instance_id, state_id, log_id)
+
+
+            # First address is set as the main address
+            if idx == 0:
+                self.update_customer_addresses(customer_id, address, prestashop_country, prestashop_state)
+            else:
+                # Subsequent addresses are added as child records
+                self.create_child_customer(
+                    instance_id, customer_id, address, prestashop_country, prestashop_state)
 
         if customer_line:
             customer_line.res_partner_id = customer_id.id
@@ -142,6 +167,7 @@ class ResPartner(models.Model):
             'state_id': state_id.id if state_id else False,
             'phone': phone or '',
             'mobile': mobile or '',
+            'prestashop_customer_id': address.get('id_customer') or '',
             'prestashop_address_id': address.get('id'),
         }
 

@@ -94,6 +94,29 @@ class PrestashopInstanceIntegrations(models.Model):
         string='Create Product in Odoo if not matched.',
         default=False
     )
+    order_status_ids = fields.Many2many(
+        comodel_name='prestashop.order.status',
+        string='Order Status',
+        required=True
+    )
+    prestashop_discount_product_id = fields.Many2one('product.product', string="Prestashop Discount Product",
+                                                     copy=False, tracking=True, default=lambda self: self.env.ref(
+            'odoo_prestashop_integration.discount_product', False),
+                                                     help="this product will be considered as a discount product for add \n"
+                                                          "sale order line with discount value")
+
+    prestashop_gift_product_id = fields.Many2one('product.product', string="Prestashop Gift Product",
+                                                 copy=False, tracking=True,
+                                                 default=lambda self: self.env.ref(
+                                                     'odoo_prestashop_integration.gift_card_product', False),
+                                                 help="this product will be considered as a gift product for add \n"
+                                                      "sale order line")
+    prestashop_shipping_product_id = fields.Many2one('product.product', string="Prestashop Shipping Product",
+                                                     copy=False, tracking=True,
+                                                     default=lambda self: self.env.ref(
+                                                         'odoo_prestashop_integration.shipping_product', False),
+                                                     help="this product will be considered as a Shipping product for add \n"
+                                                          "sale order line")
     # is_sync_images = fields.Boolean("Sync Product Images?",
     #                                 help="If true then Images will be sync at the time of Import Products.",
     #                                 default=False)

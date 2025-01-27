@@ -1,7 +1,7 @@
 from odoo import models, fields, api, tools
 from odoo.tools.safe_eval import safe_eval
 from datetime import timedelta
-import urllib.parse as urlparse
+from urllib.parse import quote
 import logging
 import pprint
 import re
@@ -78,56 +78,134 @@ class OrderDataQueue(models.Model):
         for prestashop_order in tools.split_every(batch_size, prestashop_order_list):
             queue_id = self.generate_prestashop_order_queue(instance_id)
             for order in prestashop_order:
-                prestashop_order_dict = order.to_dict()
+                prestashop_order_dict = order
                 self.env['order.data.queue.line'].create_prestashop_order_queue_line(prestashop_order_dict, instance_id, queue_id)
             order_id_list.append(queue_id.id)
         return order_id_list
 
-    def process_prestashop_order_queue(self,instance_id=False):
+    def import_orders_from_prestashop_to_odoo(self, instance, from_date=False, to_date=False, prestashop_order_ids=False):
         """
-        This method is used for Create Order from prestashop To Odoo
-        From order queue create order in odoo
+        - From operation wizard's button & from import order cron this method will call.
+        - Remote IDs wise import order process
+        - From and to date wise import order process
         """
-        instance_id = instance_id if instance_id else self.instance_id
+
+        last_synced_date = fields.Datetime.now()
+        queue_id_list = []
+        from_date = from_date or (fields.Datetime.now() - timedelta(days=1))
+        to_date = to_date or fields.Datetime.now()
+
+        if prestashop_order_ids:
+            prestashop_order_list = self.fetch_orders_from_prestashop_to_odoo(instance,prestashop_order_id=prestashop_order_ids)
+        else:
+            prestashop_order_list = self.fetch_orders_from_prestashop_to_odoo(instance,from_date=from_date, to_date=to_date)
+
+        if prestashop_order_list:
+            queue_id_list = self.create_prestashop_order_queue_job(instance, prestashop_order_list)
+            if prestashop_order_ids and queue_id_list:
+                self.browse(queue_id_list).process_prestashop_order_queue()
+            if queue_id_list:
+                instance.last_order_synced_date = last_synced_date
+        return queue_id_list
+
+    def fetch_orders_from_prestashop_to_odoo(self, instance, from_date=False, to_date=False, prestashop_order_ids=False):
+        prestashop_order_list = []
+        formated_from_date = from_date.strftime('%Y-%m-%d %H:%M:%S')
+        formated_to_date = to_date.strftime('%Y-%m-%d %H:%M:%S')
+        encoded_start_date = quote(formated_from_date, safe=":")
+        encoded_end_date = quote(formated_to_date, safe=":")
+        order_status_ids = instance.order_status_ids
+
+        # Convert order_status_ids to a comma-separated string
+        order_status_filter = ",".join(str(order_status.id) for order_status in order_status_ids)
+
+        if prestashop_order_ids:
+            order_ids = list(set(re.findall(re.compile(r"(\d+)"), prestashop_order_ids)))
+            for order_id in order_ids:
+                api_operation = "http://%s@%s/api/orders/?output_format=JSON&filter[id]=[%s]&display=full" % (
+                    instance.prestashop_api_key, instance.prestashop_url, order_id)
+                response_status, order_response_data = instance.send_get_request_from_odoo_to_prestashop(
+                    api_operation)
+                if response_status:
+                    order_dicts = order_response_data.get('orders')
+                    prestashop_order_list.extend(order_dicts)
+                else:
+                    _logger.info("Getting Some Error In Fetch The order :: \n {}".format(order_response_data))
+
+        else:
+            try:
+                api_operation = (
+                        "http://%s@%s/api/orders/?output_format=JSON&display=full&date=1"
+                        "&filter[date_add]=[%s,%s]&filter[current_state]=[%s]"
+                        % (
+                            instance.prestashop_api_key,
+                            instance.prestashop_url,
+                            encoded_start_date,
+                            encoded_end_date,
+                            order_status_filter,
+                        ))
+                response_status, order_response_data = instance.send_get_request_from_odoo_to_prestashop(api_operation)
+                if response_status and order_response_data:
+                    order_dicts = order_response_data.get('orders')
+                    prestashop_order_list.extend(order_dicts)
+                else:
+                    _logger.info("Getting Some Error In Fetch The order :: \n {}".format(order_response_data))
+
+
+            except Exception as e:
+                _logger.info("Getting Some Error In Fetch The product :: \n {}".format(e))
+        return prestashop_order_list
+
+
+    def process_prestashop_order_queue(self, instance_id=False):
+        """
+        This method is used for process the order queue line from order queue.
+        """
+        sale_order_object, instance_id = self.env['sale.order'], instance_id if instance_id else self.instance_id
         if self._context.get('from_cron'):
             order_data_queues = self.search([('instance_id', '=', instance_id.id), ('state', '!=', 'completed')],
-                                               order="id asc")
+                                            order="id asc")
         else:
             order_data_queues = self
-        for order_queue in order_data_queues:
-            to_process_order_queue_line_ids = order_queue.prestashop_order_queue_line_ids.filtered(
-                lambda x: x.state in ['draft', 'partially_completed', 'failed'] and x.number_of_fails < 3)
-
-            if not order_queue.prestashop_log_id:
-                log_id = self.env['prestashop.log'].generate_prestashop_logs('order', 'import', instance_id, 'Process Started')
+        for order_data_queue in order_data_queues:
+            if order_data_queue.prestashop_log_id:
+                log_id = order_data_queue.prestashop_log_id
             else:
-                log_id = order_queue.prestashop_log_id
-
-            order_queue.prestashop_log_id = log_id.id
-            for order_line in to_process_order_queue_line_ids:
+                log_id = self.env['prestashop.log'].generate_prestashop_logs('order', 'import', instance_id,
+                                                                       'Process Started')
+                self._cr.commit()
+            if self._context.get('from_cron'):
+                order_data_queue_lines = order_data_queue.prestashop_order_queue_line_ids.filtered(
+                    lambda x: x.state in ['draft', 'partially_completed'])
+            else:
+                order_data_queue_lines = order_data_queue.prestashop_order_queue_line_ids.filtered(
+                    lambda x: x.state in ['draft', 'partially_completed', 'failed'] and x.number_of_fails < 3)
+            for line in order_data_queue_lines:
                 try:
-                    url = ''.format(order_line.prestashop_order_queue_id)
-                    authorization_code = 'Bearer {}'.format()
-                    headers = {
-                        'Authorization': authorization_code,
-                    }
-                    payload = {}
-                    response_status, response_data = instance_id.api_calling_method("GET", url, payload, headers)
-                    if response_status:
-                        print('response_status......',response_status)
-                        order_line.state='completed'
+                    prestashop_order_dictionary = safe_eval(line.order_data_to_process)
+                    order_id, log_msg, fault_or_not, line_state = sale_order_object.process_import_order_from_prestashop(
+                        prestashop_order_dictionary,
+                        instance_id, log_id, line)
+
+                    if not order_id:
+                        line.number_of_fails += 1
+                        if not line.sale_order_id:
+                            order_id = self.env['sale.order'].search([('name','=',line.name)])
+                            line.sale_order_id = order_id and order_id.id
                     else:
-                        log_msg = f"Something went wrong, not getting successful response from Prestashop\n{response_data}."
-                        order_line.number_of_fails += 1
-                        self.env['Prestashop.log.line'].generate_prestashop_process_line('order', 'import', instance_id, log_msg,
-                                                                                         False, log_msg, log_id, True)
-                except Exception as error:
-                    order_line.state = 'failed'
-                    log_msg = '{0} :  {1} - Getting Some Error When Try To Process Order Queue From Prestashop To Odoo'.format(
-                        order_line.name,error)
+                        line.sale_order_id = order_id.id
                     self.env['prestashop.log.line'].generate_prestashop_process_line('order', 'import', instance_id, log_msg,
-                                                                                     False, log_msg, log_id, True)
+                                                                               False, log_msg, log_id, fault_or_not)
+                    line.state = line_state
+                except Exception as error:
                     _logger.info(error)
+                    self.env['prestashop.log.line'].generate_prestashop_process_line('order', 'import', instance_id, error,
+                                                                               False, error, log_id, True)
+
+                    if line:
+                        line.state = 'failed'
+                        line.number_of_fails += 1
+            order_data_queue.prestashop_log_id = log_id.id
             log_id.prestashop_operation_message = 'Process Has Been Finished'
             if not log_id.prestashop_operation_line_ids:
                 log_id.unlink()
@@ -160,4 +238,12 @@ class OrderDataQueueLine(models.Model):
         """
         From this method queue line will create.
         """
-        pass
+        order_queue_line_id = self.create({
+            'order_data_id': prestashop_order_dict.get('id', ''),
+            'state': 'draft',
+            'name': prestashop_order_dict.get('reference', '').strip(),
+            'order_data_to_process': pprint.pformat(prestashop_order_dict),
+            'instance_id': instance_id and instance_id.id or False,
+            'prestashop_order_queue_id': queue_id and queue_id.id or False,
+        })
+        return order_queue_line_id
