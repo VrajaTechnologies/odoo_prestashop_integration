@@ -35,6 +35,7 @@
                                 <field name="prestashop_instance_id" readonly="1"/>
                                 <field name="product_data_queue_id" readonly="1"/>
                                 <field name="prestashop_product_id" readonly="1"/>
+                                <field name="inventory_item_id" readonly="1"/>
                             </group>
                         </group>
 

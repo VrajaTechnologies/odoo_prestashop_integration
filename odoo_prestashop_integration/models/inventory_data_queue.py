@@ -3,13 +3,11 @@ import requests
 import json
 from odoo import models, fields, tools, api
 
-# from ..shopify.pyactiveresource.connection import ClientError
-
 _logger = logging.getLogger("Prestashop Inventory Queue")
 
 
-class InventoryDataQueue(models.Model):
-    _name = "inventory.data.queue"
+class PrestashopInventoryDataQueue(models.Model):
+    _name = "prestashop.inventory.data.queue"
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _description = "Inventory Data Queue"
     _order = 'id DESC'
@@ -30,15 +28,30 @@ class InventoryDataQueue(models.Model):
             else:
                 queue.state = 'partially_completed'
 
-    name = fields.Char(string='Name')
-    instance_id = fields.Many2one('prestashop.instance.integration', string='Instance', help='Select Instance Id')
-    state = fields.Selection(selection=[('draft', 'Draft'), ('partially_completed', 'Partially Completed'),
-                                        ('completed', 'Completed'), ('failed', 'Failed')],
-                             tracking=True, default='draft', compute="_compute_queue_line_state_and_count")
-    prestashop_inventory_queue_line_ids = fields.One2many("inventory.data.queue.line",
-                                                          "prestashop_inventory_queue_id",
-                                                          "Inventory Queue Lines")
-    prestashop_log_id = fields.Many2one('prestashop.log', string="Logs")
+    name = fields.Char(
+        string='Name'
+    )
+    instance_id = fields.Many2one(
+        comodel_name='prestashop.instance.integration',
+        string='Instance',
+        help='Select Instance Id'
+    )
+    state = fields.Selection(
+        selection=[('draft', 'Draft'), ('partially_completed', 'Partially Completed'),
+                   ('completed', 'Completed'), ('failed', 'Failed')],
+        tracking=True,
+        default='draft',
+        compute="_compute_queue_line_state_and_count"
+    )
+    prestashop_inventory_queue_line_ids = fields.One2many(
+        comodel_name="prestashop.inventory.data.queue.line",
+        inverse_name="prestashop_inventory_queue_id",
+        string="Inventory Queue Lines"
+    )
+    prestashop_log_id = fields.Many2one(
+        comodel_name='prestashop.log',
+        string="Logs"
+    )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -50,7 +63,7 @@ class InventoryDataQueue(models.Model):
             name = sequence and sequence.next_by_id() or '/'
             if type(vals) == dict:
                 vals.update({'name': name})
-        return super(InventoryDataQueue, self).create(vals_list)
+        return super(PrestashopInventoryDataQueue, self).create(vals_list)
 
     def unlink(self):
         """
@@ -59,7 +72,7 @@ class InventoryDataQueue(models.Model):
         for queue in self:
             if queue.prestashop_inventory_queue_line_ids:
                 queue.prestashop_inventory_queue_line_ids.unlink()
-        return super(InventoryDataQueue, self).unlink()
+        return super(PrestashopInventoryDataQueue, self).unlink()
 
     def generate_prestashop_inventory_queue(self, instance, location):
         """
@@ -78,7 +91,7 @@ class InventoryDataQueue(models.Model):
         for prestashop_inventories in tools.split_every(batch_size, prestashop_inventory_list):
             queue_id = self.generate_prestashop_inventory_queue(instance_id)
             for inventory in prestashop_inventories:
-                self.env['inventory.data.queue.line'].create_prestashop_inventory_queue_line(inventory, instance_id,
+                self.env['prestashop.inventory.data.queue.line'].create_prestashop_inventory_queue_line(inventory, instance_id,
                                                                                              queue_id, log_id)
             queue_id_list.append(queue_id.id)
             if not queue_id.prestashop_inventory_queue_line_ids:
@@ -133,20 +146,35 @@ class InventoryDataQueue(models.Model):
                 log_id.unlink()
 
 
-class InventoryDataQueueLine(models.Model):
-    _name = "inventory.data.queue.line"
+class PrestashopInventoryDataQueueLine(models.Model):
+    _name = "prestashop.inventory.data.queue.line"
     _inherit = ["mail.thread", "mail.activity.mixin"]
 
-    product_id = fields.Many2one('product.product')
-    prestashop_inventory_queue_id = fields.Many2one('inventory.data.queue', string='Inventory Data Queue')
-    instance_id = fields.Many2one('prestashop.instance.integration', string='Instance',
-                                  help='Select Instance Id')
-    state = fields.Selection(selection=[('draft', 'Draft'), ('completed', 'Completed'), ('failed', 'Failed')],
-                             default='draft')
-    inventory_data_to_process = fields.Text(string="Inventory Data")
-    number_of_fails = fields.Integer(string="Number of attempts",
-                                     help="This field gives information regarding how many time we will try to proceed the order",
-                                     copy=False)
+    product_id = fields.Many2one(
+        comodel_name='product.product',
+        string='Product'
+    )
+    prestashop_inventory_queue_id = fields.Many2one(
+        comodel_name='prestashop.inventory.data.queue',
+        string='Inventory Data Queue'
+    )
+    instance_id = fields.Many2one(
+        comodel_name='prestashop.instance.integration',
+        string='Instance',
+        help='Select Instance Id'
+    )
+    state = fields.Selection(
+        selection=[('draft', 'Draft'), ('completed', 'Completed'), ('failed', 'Failed')],
+        default='draft'
+    )
+    inventory_data_to_process = fields.Text(
+        string="Inventory Data"
+    )
+    number_of_fails = fields.Integer(
+        string="Number of attempts",
+        help="This field gives information regarding how many time we will try to proceed the order",
+        copy=False
+    )
 
     def create_prestashop_inventory_queue_line(self, prestashop_inventory_dict, instance_id, queue_id, log_id):
         """

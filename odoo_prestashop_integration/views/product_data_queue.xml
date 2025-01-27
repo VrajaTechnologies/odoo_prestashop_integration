@@ -4,7 +4,7 @@
         <!--Product Queue tree view-->
         <record id="view_prestashop_product_queue_tree_view" model="ir.ui.view">
             <field name="name">Prestashop Product Queue</field>
-            <field name="model">product.data.queue</field>
+            <field name="model">prestashop.product.data.queue</field>
             <field name="type">tree</field>
             <field name="arch" type="xml">
                 <tree string="Process Detail" create='false'>
@@ -21,7 +21,7 @@
         <!--Product Queue form view-->
         <record id="view_prestashop_product_queue_form" model="ir.ui.view">
             <field name="name">Prestashop Product Queue</field>
-            <field name="model">product.data.queue</field>
+            <field name="model">prestashop.product.data.queue</field>
             <field name="type">form</field>
             <field name="arch" type="xml">
                 <form string="Prestashop Product Process Queue" create="false" edit="false">
@@ -166,7 +166,7 @@
         <!-- action log-->
         <record id="action_prestashop_product_process" model="ir.actions.act_window">
             <field name="name">Product Queue</field>
-            <field name="res_model">product.data.queue</field>
+            <field name="res_model">prestashop.product.data.queue</field>
             <field name="view_id" ref="view_prestashop_product_queue_tree_view"/>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">

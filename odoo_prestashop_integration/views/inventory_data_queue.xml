@@ -4,7 +4,7 @@
         <!--Inventory Queue tree view-->
         <record id="view_prestashop_inventory_queue_tree_view" model="ir.ui.view">
             <field name="name">Prestashop Inventory Queue</field>
-            <field name="model">inventory.data.queue</field>
+            <field name="model">prestashop.inventory.data.queue</field>
             <field name="type">tree</field>
             <field name="arch" type="xml">
                 <tree string="Process Detail">
@@ -21,7 +21,7 @@
         <!--Inventory Queue form view-->
         <record id="view_prestashop_inventory_queue_form" model="ir.ui.view">
             <field name="name">Prestashop Inventory Queue</field>
-            <field name="model">inventory.data.queue</field>
+            <field name="model">prestashop.inventory.data.queue</field>
             <field name="type">form</field>
             <field name="arch" type="xml">
                 <form string="Prestashop Inventory Process Queue">
@@ -108,7 +108,7 @@
         <!-- action log-->
         <record id="action_prestashop_inventory_process" model="ir.actions.act_window">
             <field name="name">Export Inventory Queue</field>
-            <field name="res_model">inventory.data.queue</field>
+            <field name="res_model">prestashop.inventory.data.queue</field>
             <field name="view_id" ref="view_prestashop_inventory_queue_tree_view"/>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">

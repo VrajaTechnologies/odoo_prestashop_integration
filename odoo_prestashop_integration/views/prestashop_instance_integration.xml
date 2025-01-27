@@ -30,7 +30,7 @@
             <field name="name">Prestashop Customer</field>
             <field name="res_model">res.partner</field>
             <field name="view_id" ref="base.view_partner_tree"/>
-            <field name="domain">[('instance_id', '=', active_id)]</field>
+            <field name="domain">[('prestashop_instance_id', '=', active_id)]</field>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
                     Prestashop Customer will display here
@@ -83,7 +83,8 @@
                             <group>
                                 <field name="company_id" required="1"/>
                                 <field name="warehouse_id" required="1"/>
-                                <field name="prestashop_store_time_zone" readonly="1"/>
+                                <field name="prestashop_shop_urls_id" readonly="1"/>
+                                <field name="prestashop_shop_id" readonly="1"/>
                             </group>
                         </group>
                         <notebook name="Notebook">
@@ -129,36 +130,36 @@
                                     </div>
                                 </div>
                                 <br/>
-                                <h3>Update Order Status</h3>
-                                <br/>
-                                <div class="col-12 col-lg-6 o_setting_box">
-                                    <div class="o_setting_left_pane">
-                                        <field name="auto_fulfilled_gif_card_order"/>
-                                    </div>
-                                    <div class="o_setting_right_pane">
-                                        <label string="Auto Fulfilled Gift Card Order"
-                                               for="auto_fulfilled_gif_card_order"/>
-                                        <div class="text-muted">
-                                            Automatically fulfill only the gift cards of the order.
-                                            Prestashop -> Settings -> Checkout -> Order processing
-                                            If you have Checked Automatically fulfill only the gift cards of the order
-                                            then Only Checked here.
-                                        </div>
-                                    </div>
-                                </div>
-                                <br/>
+<!--                                <h3>Update Order Status</h3>-->
+<!--                                <br/>-->
+<!--                                <div class="col-12 col-lg-6 o_setting_box">-->
+<!--                                    <div class="o_setting_left_pane">-->
+<!--                                        <field name="auto_fulfilled_gif_card_order"/>-->
+<!--                                    </div>-->
+<!--                                    <div class="o_setting_right_pane">-->
+<!--                                        <label string="Auto Fulfilled Gift Card Order"-->
+<!--                                               for="auto_fulfilled_gif_card_order"/>-->
+<!--                                        <div class="text-muted">-->
+<!--                                            Automatically fulfill only the gift cards of the order.-->
+<!--                                            Prestashop -> Settings -> Checkout -> Order processing-->
+<!--                                            If you have Checked Automatically fulfill only the gift cards of the order-->
+<!--                                            then Only Checked here.-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <br/>-->
 
-                                <div class="col-12 col-lg-6 o_setting_box">
-                                    <div class="o_setting_left_pane">
-                                        <field name="notify_customer"/>
-                                    </div>
-                                    <div class="o_setting_right_pane">
-                                        <label string="Notify TO Customer" for="notify_customer"/>
-                                        <div class="text-muted">
-                                            Notify Customer Once Update Order Status.
-                                        </div>
-                                    </div>
-                                </div>
+<!--                                <div class="col-12 col-lg-6 o_setting_box">-->
+<!--                                    <div class="o_setting_left_pane">-->
+<!--                                        <field name="notify_customer"/>-->
+<!--                                    </div>-->
+<!--                                    <div class="o_setting_right_pane">-->
+<!--                                        <label string="Notify TO Customer" for="notify_customer"/>-->
+<!--                                        <div class="text-muted">-->
+<!--                                            Notify Customer Once Update Order Status.-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
                             </page>
 
                             <page name="product_information" string="Product">
@@ -189,18 +190,18 @@
                                 </div>
 
 
-                                <div class="col-12 col-lg-6 o_setting_box">
-                                    <div class="o_setting_left_pane">
-                                        <field name="is_sync_images"/>
-                                    </div>
-                                    <div class="o_setting_right_pane">
-                                        <label string="Sync Image" for="is_sync_images"/>
-                                        <div class="text-muted">
-                                            When selected, this option automates the assignment of a product image
-                                            during the product import process.
-                                        </div>
-                                    </div>
-                                </div>
+<!--                                <div class="col-12 col-lg-6 o_setting_box">-->
+<!--                                    <div class="o_setting_left_pane">-->
+<!--                                        <field name="is_sync_images"/>-->
+<!--                                    </div>-->
+<!--                                    <div class="o_setting_right_pane">-->
+<!--                                        <label string="Sync Image" for="is_sync_images"/>-->
+<!--                                        <div class="text-muted">-->
+<!--                                            When selected, this option automates the assignment of a product image-->
+<!--                                            during the product import process.-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
 
                             </page>
                             <page name="synced_information" string="Last Synced Detail">

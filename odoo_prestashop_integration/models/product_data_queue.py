@@ -6,8 +6,8 @@ import pprint
 _logger = logging.getLogger("Prestashop Product Queue")
 
 
-class ProductDataQueue(models.Model):
-    _name = "product.data.queue"
+class PrestashopProductDataQueue(models.Model):
+    _name = "prestashop.product.data.queue"
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _description = "Prestashop Product Data Queue"
     _order = 'id DESC'
@@ -61,7 +61,7 @@ class ProductDataQueue(models.Model):
         help="This Button Shows Number of Done Records"
     )
     prestashop_product_queue_line_ids = fields.One2many(
-        comodel_name="product.data.queue.line",
+        comodel_name="prestashop.product.data.queue.line",
         inverse_name="prestashop_product_queue_id",
         string="Product Queue Lines"
     )
@@ -81,7 +81,7 @@ class ProductDataQueue(models.Model):
             name = sequence and sequence.next_by_id() or '/'
             if type(vals) == dict:
                 vals.update({'name': name})
-        return super(ProductDataQueue, self).create(vals_list)
+        return super(PrestashopProductDataQueue, self).create(vals_list)
 
     def unlink(self):
         """
@@ -91,7 +91,7 @@ class ProductDataQueue(models.Model):
         for queue in self:
             if queue.prestashop_product_queue_line_ids:
                 queue.prestashop_product_queue_line_ids.unlink()
-        return super(ProductDataQueue, self).unlink()
+        return super(PrestashopProductDataQueue, self).unlink()
 
     def generate_prestashop_product_queue(self, instance):
         return self.create({'instance_id': instance.id})
@@ -107,7 +107,7 @@ class ProductDataQueue(models.Model):
             queue_id = self.generate_prestashop_product_queue(instance_id)
             for product in prestashop_products:
                 prestashop_product_dict = product
-                self.env['product.data.queue.line'].create_prestashop_product_queue_line(prestashop_product_dict, instance_id,
+                self.env['prestashop.product.data.queue.line'].create_prestashop_product_queue_line(prestashop_product_dict, instance_id,
                                                                                       queue_id)
             queue_id_list.append(queue_id.id)
         return queue_id_list
@@ -137,14 +137,13 @@ class ProductDataQueue(models.Model):
                     instance and instance.prestashop_url)
                 response_status, response_data = instance.send_get_request_from_odoo_to_prestashop(api_operation)
                 if response_status:
-                    _logger.info("prestashop Get Product Response : {0}".format(response_data))
-                    products = response_data.get('products')[10:20]
+                    _logger.info("Prestashop Product Response : {0}".format(response_data))
+                    products = response_data.get('products')
                     for product in products:
                         prod_id = product.get('id')
                         if prod_id:
                             api_operation = "http://%s@%s/api/products/?output_format=JSON&filter[id]=[%s]&display=full" % (
-                                instance and instance.prestashop_api_key,
-                                instance and instance.prestashop_url, prod_id)
+                                instance.prestashop_api_key, instance.prestashop_url, prod_id)
                             response_status, product_response_data = instance.send_get_request_from_odoo_to_prestashop(
                                 api_operation)
                             if response_status:
@@ -236,8 +235,8 @@ class ProductDataQueue(models.Model):
                 log_id.unlink()
 
 
-class ProductDataQueueLine(models.Model):
-    _name = "product.data.queue.line"
+class PrestashopProductDataQueueLine(models.Model):
+    _name = "prestashop.product.data.queue.line"
     _description = "Product Data Queue Line"
     _inherit = ["mail.thread", "mail.activity.mixin"]
 
@@ -245,7 +244,7 @@ class ProductDataQueueLine(models.Model):
         string='Name'
     )
     prestashop_product_queue_id = fields.Many2one(
-        comodel_name='product.data.queue',
+        comodel_name='prestashop.product.data.queue',
         string='Product Data Queue'
     )
     instance_id = fields.Many2one(
@@ -291,22 +290,3 @@ class ProductDataQueueLine(models.Model):
             'prestashop_product_queue_id': queue_id and queue_id.id or False,
         })
         return product_queue_line_id
-
-class ProductVariantQueueLine(models.Model):
-    _name = "product.variant.queue.line"
-    _description = "Product Variant Queue Line"
-    _inherit = ["mail.thread", "mail.activity.mixin"]
-
-    name = fields.Char(string='Name')
-    prestashop_variant_product_queue_id = fields.Many2one('product.data.queue', string='Product Variant Data Queue')
-    instance_id = fields.Many2one('prestashop.instance.integration', string='Instance',
-                                  help='Select Instance Id')
-    product_variant_data_id = fields.Char(string="Product Variant Data ID", help='This is the Product Id of Prestashop Product')
-    state = fields.Selection(selection=[('draft', 'Draft'), ('partially_completed', 'Partially Completed'),
-                                        ('completed', 'Completed'), ('failed', 'Failed')], default='draft')
-    variant_data_to_process = fields.Text(string="Variant Data")
-    product_id = fields.Many2one("product.product")
-    number_of_fails = fields.Integer(string="Number of attempts",
-                                     help="This field gives information regarding how many time we will try to proceed the order",
-                                     copy=False)
-    log_line = fields.One2many('prestashop.log.line', 'product_queue_line')

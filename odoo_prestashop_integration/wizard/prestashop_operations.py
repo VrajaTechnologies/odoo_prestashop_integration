@@ -73,7 +73,7 @@ class PrestashopOperations(models.TransientModel):
         model_form = False
         if self.prestashop_operation == 'import':
             if self.import_operations == "import_product":
-                product_queue_ids = self.env['product.data.queue'].import_product_from_prestashop_to_odoo(instance,
+                product_queue_ids = self.env['prestashop.product.data.queue'].import_product_from_prestashop_to_odoo(instance,
                                                                                                           self.prestashop_product_id)
                 if product_queue_ids:
                     queue_ids = product_queue_ids

@@ -55,9 +55,11 @@ class PrestashopProductListingItem(models.Model):
     combination_weight = fields.Float(
         string='Weight'
     )
+    inventory_item_id = fields.Char(
+        string="Inventory Item ID"
+    )
 
     stock_value = fields.Float(string="Stock Value")
-    inventory_item_id = fields.Char(string="Inventory Item ID")
     inventory_policy = fields.Selection([("continue", "Allow"), ("deny", "Denied")],
                                         string="Sale out of stock products?",
                                         default="deny",

@@ -98,7 +98,7 @@ class ProcessDetailsLine(models.Model):
     fault_operation = fields.Boolean("Fault Process", default=False)
     prestashop_operation_message = fields.Char("Message")
     create_date = fields.Datetime(string='Created on')
-    product_queue_line = fields.Many2one('product.data.queue.line')
+    product_queue_line = fields.Many2one('prestashop.product.data.queue.line')
 
     @api.model_create_multi
     def create(self, vals_list):

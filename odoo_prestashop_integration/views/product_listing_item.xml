@@ -11,6 +11,7 @@
                     <field name="product_id"/>
                     <field name="product_sku"/>
                     <field name="prestashop_product_variant_id"/>
+                    <field name="inventory_item_id"/>
                     <field name="prestashop_instance_id"/>
                 </tree>
             </field>
@@ -29,6 +30,7 @@
                                 <field name="product_id" readonly="1"/>
                                 <field name="product_sku" readonly="1"/>
                                 <field name="prestashop_product_variant_id" readonly="1"/>
+                                <field name="inventory_item_id" readonly="1"/>
                             </group>
                             <group>
                                 <field name="prestashop_instance_id" readonly="1"/>

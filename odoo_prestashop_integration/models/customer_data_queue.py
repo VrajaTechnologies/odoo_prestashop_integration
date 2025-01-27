@@ -84,10 +84,8 @@ class CustomerDataQueue(models.Model):
                     prestashop_country_list.extend(country_dicts)
                 else:
                     log_msg = f"Something went wrong, not getting successful response from Prestashop\n{country_details_response_data}."
-                    self.env['prestashop.log.line'].generate_prestashop_process_line('customer',
-                                                                                     'import', instance,
-                                                                                     log_msg,
-                                                                                     False, log_msg, log_id,
+                    self.env['prestashop.log.line'].generate_prestashop_process_line('customer', 'import', instance,
+                                                                                     log_msg, False, log_msg, log_id,
                                                                                      True)
             _logger.info(prestashop_country_list)
         except Exception as error:
@@ -113,10 +111,8 @@ class CustomerDataQueue(models.Model):
                     prestashop_states_list.extend(customer_dicts)
                 else:
                     log_msg = f"Something went wrong, not getting successful response from Prestashop\n{states_details_response_data}."
-                    self.env['prestashop.log.line'].generate_prestashop_process_line('customer',
-                                                                                     'import', instance,
-                                                                                     log_msg,
-                                                                                     False, log_msg, log_id,
+                    self.env['prestashop.log.line'].generate_prestashop_process_line('customer', 'import', instance,
+                                                                                     log_msg, False, log_msg, log_id,
                                                                                      True)
             _logger.info(prestashop_states_list)
         except Exception as error:
@@ -151,11 +147,9 @@ class CustomerDataQueue(models.Model):
                             prestashop_customer_list.extend(customer_dicts)
                         else:
                             log_msg = f"Something went wrong, not getting successful response from Prestashop\n{customer_response_data or customer_details_response_data}."
-                            self.env['prestashop.log.line'].generate_prestashop_process_line('customer',
-                                                                                             'import', instance,
-                                                                                             log_msg,
-                                                                                             False, log_msg, log_id,
-                                                                                             True)
+                            self.env['prestashop.log.line'].generate_prestashop_process_line('customer', 'import',
+                                                                                             instance, log_msg, False,
+                                                                                             log_msg, log_id, True)
             _logger.info(prestashop_customer_list)
         except Exception as error:
             _logger.info("Getting Some Error In Fetch The customer :: {0}".format(error))
@@ -180,10 +174,8 @@ class CustomerDataQueue(models.Model):
                     prestashop_customer_address_list.extend(customer_address_dicts)
                 else:
                     log_msg = f"Something went wrong, not getting successful response from Prestashop\n{customer_address_details_response_data}."
-                    self.env['prestashop.log.line'].generate_prestashop_process_line('customer',
-                                                                                     'import', instance,
-                                                                                     log_msg,
-                                                                                     False, log_msg, log_id,
+                    self.env['prestashop.log.line'].generate_prestashop_process_line('customer', 'import', instance,
+                                                                                     log_msg, False, log_msg, log_id,
                                                                                      True)
         except Exception as error:
             _logger.info("Getting Some Error In Fetch The customer :: {0}".format(error))

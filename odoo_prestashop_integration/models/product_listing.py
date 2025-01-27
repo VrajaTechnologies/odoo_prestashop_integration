@@ -42,6 +42,9 @@ class PrestashopProductListing(models.Model):
     prestashop_product_id = fields.Char(
         string="Prestashop Product ID"
     )
+    inventory_item_id = fields.Char(
+        string='Inventory Item ID',
+    )
     description = fields.Text(
         string="Description"
     )
@@ -55,7 +58,7 @@ class PrestashopProductListing(models.Model):
         string='Product Listing Items'
     )
     product_data_queue_id = fields.Many2one(
-        comodel_name='product.data.queue',
+        comodel_name='prestashop.product.data.queue',
         string='Product Queue'
     )
     exported_in_prestashop = fields.Boolean(
@@ -176,7 +179,8 @@ class PrestashopProductListing(models.Model):
                         odoo_product_variant = self.prestashop_create_product_without_variant(name, variant, attribute_line_data)
 
                         need_to_archive = True
-                        prestashop_product_listing, prestashop_product_listing_item = self.create_or_update_prestashop_product_listing_and_listing_item(
+                        prestashop_product_listing, prestashop_product_listing_item = self.with_context(
+                            without_variant=True).create_or_update_prestashop_product_listing_and_listing_item(
                             product_listing_vals, product_listing_item_vals, prestashop_product_listing,
                             prestashop_product_listing_item, odoo_product_variant, update_product_listing=True,
                             update_product_listing_item=True)
@@ -243,7 +247,7 @@ class PrestashopProductListing(models.Model):
         DG
         """
         if order_line_product_listing_id:
-            product_data = self.env['product.data.queue'].fetch_product_from_prestashop_to_odoo(instance,
+            product_data = self.env['prestashop.product.data.queue'].fetch_product_from_prestashop_to_odoo(instance,
                                                                                                 prestashop_product_ids=order_line_product_listing_id)
             for product in product_data:
                 product_data = product
@@ -411,9 +415,10 @@ class PrestashopProductListing(models.Model):
         if not variant_data:
             odoo_product_variant = self.prestashop_create_product_without_variant(name, product_data)
             if odoo_product_variant:
-                prestashop_product_listing = self.create_or_update_prestashop_product_listing(product_listing_vals,
-                                                                                              False,
-                                                                                              odoo_product_variant)
+                prestashop_product_listing = self.with_context(
+                    without_variant=True).create_or_update_prestashop_product_listing(product_listing_vals, False,
+                                                                                      odoo_product_variant,
+                                                                                      product_data=product_data)
                 instance.price_list_id.set_product_price(odoo_product_variant.id, product_data.get("price"))
 
         for variant in variant_data:
@@ -431,7 +436,7 @@ class PrestashopProductListing(models.Model):
                     product_queue_line.state = 'failed'
                 continue
 
-            product_listing_item_vals = self.prepare_product_listing_item_vals(instance, variant)
+            product_listing_item_vals = self.prepare_product_listing_item_vals(instance, variant, product_data)
 
             odoo_product_variant = self.env["product.product"]
             prestashop_product_listing_item_obj = self.env["prestashop.product.listing.item"]
@@ -547,7 +552,8 @@ class PrestashopProductListing(models.Model):
         return odoo_product_variant
 
     def create_or_update_prestashop_product_listing(self, product_listing_vals, prestashop_product_listing,
-                                                 odoo_product_variant=False, odoo_product_template=False):
+                                                    odoo_product_variant=False, odoo_product_template=False,
+                                                    product_data=False):
         """
         Create new or update existing Prestashop template in Odoo.
         @param: product_listing_vals, prestashop_product_listing, odoo_product_variant
@@ -561,6 +567,10 @@ class PrestashopProductListing(models.Model):
             "product_catg_id": product_listing_vals.get("prestashop_product_category"),
             "prestashop_category_ids": product_listing_vals.get('prestashop_category_ids'),
         }
+        if self._context.get('without_variant', False):
+            stock_available_data = product_data.get('associations').get('stock_availables')
+            if len(stock_available_data) == 1:
+                vals['inventory_item_id'] = stock_available_data[0].get('id')
         if prestashop_product_listing:
             prestashop_product_listing.write(vals)
         else:
@@ -589,11 +599,14 @@ class PrestashopProductListing(models.Model):
             prestashop_product_listing_item.write(product_listing_item_vals)
         return prestashop_product_listing_item
 
-    def prepare_product_listing_item_vals(self, instance, prestashop_variant_data):
+    def prepare_product_listing_item_vals(self, instance, prestashop_variant_data, product_data):
         """
         Prepare Prestashop product listing item values.
         DG
         """
+        stock_available_data = product_data.get('associations').get('stock_availables')
+        stock_available_id = next((item['id'] for item in stock_available_data if
+                                   item['id_product_attribute'] == str(prestashop_variant_data.get("id"))), None)
         product_listing_item_vals = {
             "exported_in_prestashop": True,
             "active": True,
@@ -604,6 +617,8 @@ class PrestashopProductListing(models.Model):
             "combination_weight": prestashop_variant_data.get("weight"),
             "product_sku": prestashop_variant_data.get("reference", ""),
         }
+        if stock_available_id:
+            product_listing_item_vals['inventory_item_id'] = stock_available_id
         return product_listing_item_vals
 
     def prepare_prestashop_product_listing_vals(self, product_data, instance, product_category, product_categories):
