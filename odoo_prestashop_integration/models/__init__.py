@@ -7,6 +7,7 @@ from . import sale_order
 from . import ir_cron
 from . import prestashop_log
 from . import order_data_queue
+from . import order_status_data
 from . import customer_data_queue
 from . import inventory_data_queue
 from . import product_attribute

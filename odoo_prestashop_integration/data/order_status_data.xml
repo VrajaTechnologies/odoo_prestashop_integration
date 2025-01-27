@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<odoo>
+    <data noupdate="0">
+        <!--  Demo Leads -->
+        <record id="awaiting_check_payment" model="prestashop.order.status">
+            <field name="name">Awaiting check payment</field>
+            <field name="order_status_id">1</field>
+        </record>
+        <record id="payment_accepted" model="prestashop.order.status">
+            <field name="name">Payment accepted</field>
+            <field name="order_status_id">2</field>
+        </record>
+        <record id="processing_in_progress" model="prestashop.order.status">
+            <field name="name">Processing in progress</field>
+            <field name="order_status_id">3</field>
+        </record>
+        <record id="shipped" model="prestashop.order.status">
+            <field name="name">Shipped</field>
+            <field name="order_status_id">4</field>
+        </record>
+        <record id="delivered" model="prestashop.order.status">
+            <field name="name">Delivered</field>
+            <field name="order_status_id">5</field>
+        </record>
+        <record id="canceled" model="prestashop.order.status">
+            <field name="name">Canceled</field>
+            <field name="order_status_id">6</field>
+        </record>
+        <record id="refunded" model="prestashop.order.status">
+            <field name="name">Refunded</field>
+            <field name="order_status_id">7</field>
+        </record>
+        <record id="payment_error" model="prestashop.order.status">
+            <field name="name">Payment error</field>
+            <field name="order_status_id">8</field>
+        </record>
+        <record id="on_backorder_paid" model="prestashop.order.status">
+            <field name="name">On backorder (paid)</field>
+            <field name="order_status_id">9</field>
+        </record>
+        <record id="awaiting_bank_wire_payment" model="prestashop.order.status">
+            <field name="name">Awaiting bank wire payment</field>
+            <field name="order_status_id">10</field>
+        </record>
+        <record id="remote_payment_accepted" model="prestashop.order.status">
+            <field name="name">Remote payment accepted</field>
+            <field name="order_status_id">11</field>
+        </record>
+        <record id="on_backorder_not_paid" model="prestashop.order.status">
+            <field name="name">On backorder (not paid)</field>
+            <field name="order_status_id">12</field>
+        </record>
+        <record id="awaiting_cash_on_delivery_validation" model="prestashop.order.status">
+            <field name="name">Awaiting Cash On Delivery validation</field>
+            <field name="order_status_id">13</field>
+        </record>
+
+    </data>
+</odoo>

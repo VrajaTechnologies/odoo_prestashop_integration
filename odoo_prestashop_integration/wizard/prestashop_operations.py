@@ -91,7 +91,10 @@ class PrestashopOperations(models.TransientModel):
                     model_form = "odoo_prestashop_integration.prestashop_customer_data_form"
             elif self.import_operations == "import_order":
                 print('Order')
-                order_queue_ids = self.env['sale.order'].prestashop_import_orders(instance.id)
+                order_queue_ids = self.env['order.data.queue'].import_orders_from_prestashop_to_odoo(instance,
+                                                                                                  self.from_date_order,
+                                                                                                  self.to_date_order,
+                                                                                                  self.prestashop_order_id)
                 if order_queue_ids:
                     queue_ids = order_queue_ids
                     model_action = "odoo_prestashop_integration.action_prestashop_order_queue_process"

@@ -10,7 +10,9 @@
     'data': [
         'security/ir.model.access.csv',
         'wizard/prestashop_operation_view.xml',
+        'data/order_status_data.xml',
         'data/cron.xml',
+        'data/product_data.xml',
         'views/ir_cron.xml',
         'views/prestashop_log.xml',
         'views/product_category_view.xml',

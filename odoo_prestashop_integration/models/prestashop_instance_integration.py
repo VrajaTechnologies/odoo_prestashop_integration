@@ -28,11 +28,30 @@ class PrestashopInstanceIntegrations(models.Model):
     prestashop_url = fields.Char(string='Prestashop Url', help='Enter Prestashop Url', copy=False, tracking=True)
     prestashop_api_key = fields.Char(string='Prestashop API Key', help='Enter Prestashop API Key', copy=False, tracking=True)
     price_list_id = fields.Many2one('product.pricelist', string="Price List", copy=False, tracking=True)
+    order_status_ids = fields.Many2many('prestashop.order.status', string='Order Status', required=True)
     image = fields.Binary(string="Image", help="Select Image.")
     create_product_if_not_found = fields.Boolean('Create Product in Odoo if not matched.', default=False)
     is_sync_images = fields.Boolean("Sync Product Images?",
                                     help="If true then Images will be sync at the time of Import Products.",
                                     default=False)
+    prestashop_discount_product_id = fields.Many2one('product.product', string="Prestashop Discount Product",
+                                                  copy=False, tracking=True, default=lambda self: self.env.ref(
+            'odoo_prestashop_integration.discount_product', False),
+                                                  help="this product will be considered as a discount product for add \n"
+                                                       "sale order line with discount value")
+    
+    prestashop_gift_product_id = fields.Many2one('product.product', string="Prestashop Gift Product",
+                                              copy=False, tracking=True,
+                                              default=lambda self: self.env.ref(
+                                                  'odoo_prestashop_integration.gift_card_product', False),
+                                              help="this product will be considered as a gift product for add \n"
+                                                   "sale order line")
+    prestashop_shipping_product_id = fields.Many2one('product.product', string="Prestashop Shipping Product",
+                                                  copy=False, tracking=True,
+                                                  default=lambda self: self.env.ref(
+                                                      'odoo_prestashop_integration.shipping_product', False),
+                                                  help="this product will be considered as a Shipping product for add \n"
+                                                       "sale order line")
 
     apply_tax_in_order = fields.Selection(
         [("odoo_tax", "Odoo Default Tax Behaviour"), ("create_prestashop_tax",
@@ -45,6 +64,7 @@ class PrestashopInstanceIntegrations(models.Model):
 
     auto_fulfilled_gif_card_order = fields.Boolean(string='Auto Fulfilled Gift Card Order', default=True, tracking=True)
     notify_customer = fields.Boolean(string='Notify Customer Once Update Order Status', default=False, tracking=True)
+
 
     # def api_calling_method(self, request_type, api_url, request_data, header):
     #     """

@@ -132,19 +132,17 @@ class ProductDataQueue(models.Model):
                     _logger.info("Getting Some Error In Fetch The product :: \n {}".format(product_response_data))
         else:
             try:
-                api_operation = "http://%s@%s/api/products/?output_format=JSON" % (
-                    instance and instance.prestashop_api_key,
-                    instance and instance.prestashop_url)
+                api_operation = "http://%s@%s/api/products/?output_format=JSON" % (instance.prestashop_api_key,instance.prestashop_url)
                 response_status, response_data = instance.send_get_request_from_odoo_to_prestashop(api_operation)
                 if response_status:
                     _logger.info("prestashop Get Product Response : {0}".format(response_data))
-                    products = response_data.get('products')[10:20]
+                    products = response_data.get('products')
                     for product in products:
                         prod_id = product.get('id')
                         if prod_id:
                             api_operation = "http://%s@%s/api/products/?output_format=JSON&filter[id]=[%s]&display=full" % (
-                                instance and instance.prestashop_api_key,
-                                instance and instance.prestashop_url, prod_id)
+                               instance.prestashop_api_key,
+                            instance.prestashop_url, prod_id)
                             response_status, product_response_data = instance.send_get_request_from_odoo_to_prestashop(
                                 api_operation)
                             if response_status:
@@ -291,22 +289,3 @@ class ProductDataQueueLine(models.Model):
             'prestashop_product_queue_id': queue_id and queue_id.id or False,
         })
         return product_queue_line_id
-
-class ProductVariantQueueLine(models.Model):
-    _name = "product.variant.queue.line"
-    _description = "Product Variant Queue Line"
-    _inherit = ["mail.thread", "mail.activity.mixin"]
-
-    name = fields.Char(string='Name')
-    prestashop_variant_product_queue_id = fields.Many2one('product.data.queue', string='Product Variant Data Queue')
-    instance_id = fields.Many2one('prestashop.instance.integration', string='Instance',
-                                  help='Select Instance Id')
-    product_variant_data_id = fields.Char(string="Product Variant Data ID", help='This is the Product Id of Prestashop Product')
-    state = fields.Selection(selection=[('draft', 'Draft'), ('partially_completed', 'Partially Completed'),
-                                        ('completed', 'Completed'), ('failed', 'Failed')], default='draft')
-    variant_data_to_process = fields.Text(string="Variant Data")
-    product_id = fields.Many2one("product.product")
-    number_of_fails = fields.Integer(string="Number of attempts",
-                                     help="This field gives information regarding how many time we will try to proceed the order",
-                                     copy=False)
-    log_line = fields.One2many('prestashop.log.line', 'product_queue_line')
